@@ -1,0 +1,106 @@
+.reportPage {
+  background: #d1d5db;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* TOP BAR */
+.topBar {
+  width: 210mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.topBar h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.sub {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.btnGroup button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* A4 PAGE */
+.a4 {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  padding: 18mm;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  box-sizing: border-box;
+  color: black;
+  overflow: hidden;
+}
+
+/* TITLE */
+.title {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid black;
+  padding-bottom: 8px;
+}
+
+/* SECTION */
+.section {
+  margin-bottom: 14px;
+}
+
+.section h2 {
+  font-size: 14px;
+  background: #111;
+  color: white;
+  padding: 6px;
+}
+
+/* TABLE FIX */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  font-size: 12px;
+  word-wrap: break-word;
+}
+
+.key {
+  width: 35%;
+  font-weight: bold;
+  background: #f3f4f6;
+}
+
+.value {
+  width: 65%;
+}
+
+/* PRINT */
+@media print {
+  .no-print {
+    display: none;
+  }
+
+  .reportPage {
+    background: white;
+    padding: 0;
+  }
+
+  .a4 {
+    box-shadow: none;
+  }
+}
