@@ -4,29 +4,22 @@ import "./Home.css";
 
 export default function Home() {
   const [url, setUrl] = useState("");
-  const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
-
   const generateReport = async () => {
+    if (!url) return;
     try {
       setLoading(true);
-      setReport(null);
 
-      const res = await fetch("http://localhost:8084/report", {
+      const res = await fetch("http://localhost:8085/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
 
       const data = await res.json();
-      setReport(data);
-
-  
       navigate("/report", { state: data });
-
     } catch (err) {
       console.error("Error:", err);
     } finally {
@@ -36,40 +29,51 @@ export default function Home() {
 
   return (
     <div className="homePage">
-
       <div className="hero">
-        <h1>🚀 Website Intelligence Tool</h1>
-        <p>Analyze SEO, Performance, Security & Network in seconds</p>
+        <div className="badge">✨ Professional Audit</div>
+        <h1>Website Intelligence Tool</h1>
+        <p>
+          Analyze your website's <strong>SEO</strong>, <strong>Performance</strong>, 
+          <strong>Security</strong>, and <strong>Network</strong> metrics instantly.
+        </p>
 
-    
-        <div className="searchBox">
-          <input
-            type="text"
-            placeholder="Enter website URL (https://example.com)"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </div>
-
-        <div className="buttonGroup">
+        <div className="searchContainer">
+          <div className="searchBox">
+            <span className="searchIcon" aria-hidden="true">🌐</span>
+            <input
+              type="url"
+              placeholder="Enter website URL (e.g., https://example.com)"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              disabled={loading}
+              aria-label="Website URL"
+            />
+          </div>
 
           <button
             onClick={generateReport}
             disabled={loading || !url}
             className="generateBtn"
           >
-            {loading ? "Analyzing..." : "Generate Report"}
+            {loading ? (
+              <>
+                <span className="spinner"></span> Analyzing...
+              </>
+            ) : (
+              "Analyze Website"
+            )}
           </button>
-
         </div>
+
+        {loading && (
+          <div className="loadingCard">
+            <div className="progressBar">
+              <div className="progressLine"></div>
+            </div>
+            <p>Scanning security protocols, performance budgets, and SEO data...</p>
+          </div>
+        )}
       </div>
-
-      {loading && (
-        <div className="loadingCard">
-          🔍 Scanning website... please wait
-        </div>
-      )}
-
     </div>
   );
 }

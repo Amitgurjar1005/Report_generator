@@ -94,16 +94,16 @@ function Section({ title, data }) {
               <td className="key">{key}</td>
               <td className="value">
              {value === "" || value === null || value === undefined ? (
-  "-"
-) : typeof value === "object" ? (
-  Object.keys(value).length === 0 ? (
-    "No Data"
-  ) : (
-    <pre className="json">{JSON.stringify(value, null, 2)}</pre>
-  )
-) : (
-  String(value)
-)}
+                "-"
+              ) : typeof value === "object" ? (
+            Object.keys(value).length === 0 ? (
+                "No Data"
+                ) : (
+                <pre className="json">{JSON.stringify(value, null, 2)}</pre>
+               ) 
+              ) : (
+               String(value)
+              )}
               </td>
 
 
