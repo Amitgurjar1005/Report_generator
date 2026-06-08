@@ -12,7 +12,7 @@ export default function Home() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8085/report", {
+      const res = await fetch("http://localhost:8086/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

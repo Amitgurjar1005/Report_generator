@@ -11,12 +11,17 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
+		AllowOrigins: []string{
+			"http://localhost:5173",
+			"http://localhost:3000",
+		},
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders: []string{"Content-Type"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept"},
 	}))
+
+	router.Static("/screenshots", "./screenshots")
 
 	router.POST("/report", controller.GetWebsiteReport)
 
-	router.Run(":8085")
+	router.Run(":8086")
 }

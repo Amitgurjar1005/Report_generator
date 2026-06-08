@@ -31,18 +31,26 @@ func GetSeoInformation(siteurl string) (*SEOInfo, error) {
 
 	queue := []string{siteurl}
 	visited := make(map[string]bool)
-	max := 20
+	max := 100
 
 	for len(queue) > 0 && len(visited) <= max {
 		current := queue[0]
 		queue = queue[1:]
 		visited[current] = true
 
-		resp, err := client.Get(current)
+		req, err := http.NewRequest("GET", siteurl, nil)
 		if err != nil {
 			return nil, err
 		}
 
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+		req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
 		defer resp.Body.Close()
 		reader, err := io.ReadAll(resp.Body)
 		if err != nil {

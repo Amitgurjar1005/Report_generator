@@ -1,3 +1,6 @@
+/* =========================
+   MAIN PAGE
+========================= */
 .reportPage {
   background: #d1d5db;
   min-height: 100vh;
@@ -7,7 +10,9 @@
   align-items: center;
 }
 
-/* TOP BAR */
+/* =========================
+   TOP BAR
+========================= */
 .topBar {
   width: 210mm;
   display: flex;
@@ -30,9 +35,15 @@
   margin-left: 10px;
   padding: 8px 12px;
   cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: #111;
+  color: #fff;
 }
 
-/* A4 PAGE */
+/* =========================
+   A4 PAGE
+========================= */
 .a4 {
   width: 210mm;
   min-height: 297mm;
@@ -44,16 +55,21 @@
   overflow: hidden;
 }
 
-/* TITLE */
+/* =========================
+   TITLE
+========================= */
 .title {
   text-align: center;
   font-size: 20px;
   margin-bottom: 15px;
   border-bottom: 2px solid black;
   padding-bottom: 8px;
+  letter-spacing: 1px;
 }
 
-/* SECTION */
+/* =========================
+   SECTION
+========================= */
 .section {
   margin-bottom: 14px;
 }
@@ -63,9 +79,12 @@
   background: #111;
   color: white;
   padding: 6px;
+  border-radius: 3px;
 }
 
-/* TABLE FIX */
+/* =========================
+   TABLE
+========================= */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -87,9 +106,59 @@ td {
 
 .value {
   width: 65%;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
-/* PRINT */
+/* =========================
+   BROKEN IMAGE CARD
+========================= */
+.broken-image-card {
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: #fafafa;
+  transition: 0.2s;
+}
+
+.broken-image-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* =========================
+   SMALL CLEAN IMAGE (IMPORTANT)
+========================= */
+.broken-image-preview {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #ef4444;
+  margin-top: 8px;
+}
+
+/* links */
+.broken-image-card a {
+  font-size: 11px;
+  word-break: break-all;
+  color: #2563eb;
+}
+
+/* =========================
+   JSON BLOCK
+========================= */
+.json {
+  font-size: 11px;
+  background: #f9fafb;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+/* =========================
+   PRINT MODE
+========================= */
 @media print {
   .no-print {
     display: none;

@@ -46,7 +46,15 @@ func GetSocialMediaInformation(siteURL string) (*SocialLinks, error) {
 		}
 		visited[current] = true
 
-		resp, err := client.Get(current)
+		req, err := http.NewRequest("GET", current, nil)
+		if err != nil {
+			continue
+		}
+
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+
+		resp, err := client.Do(req)
 		if err != nil {
 			continue
 		}

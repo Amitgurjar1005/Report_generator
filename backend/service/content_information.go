@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -13,18 +14,31 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+type BrokenImageInfo struct {
+	PageURL        string `json:"page_url"`
+	ImageURL       string `json:"image_url"`
+	ScreenshotPath string `json:"screenshot_path"`
+}
+type BrokenLinkInfo struct {
+	PageURL string `json:"page_url"` // where it was found
+	URL     string `json:"url"`      // broken link itself
+
+}
+
 type ContentInfo struct {
-	TotalWords         int      `json:"total_words"`
-	TotalParagraphs    int      `json:"total_paragraphs"`
-	TotalImages        int      `json:"total_images"`
-	TotalSpan          int      `json:"total_span"`
-	TotalVideos        int      `json:"total_videos"`
-	TotalInternalLinks int      `json:"total_internal_links"`
-	TotalExternalLinks int      `json:"total_external_links"`
-	BrokenLinks        int      `json:"broken_links"`
-	BrokenImages       int      `json:"broken_images"`
-	EmailsFound        []string `json:"emails_found"`
-	PhonesFound        string   `json:"phones_found"`
+	TotalWords         int               `json:"total_words"`
+	TotalParagraphs    int               `json:"total_paragraphs"`
+	TotalImages        int               `json:"total_images"`
+	TotalSpan          int               `json:"total_span"`
+	TotalVideos        int               `json:"total_videos"`
+	TotalInternalLinks int               `json:"total_internal_links"`
+	TotalExternalLinks int               `json:"total_external_links"`
+	BrokenLinks        int               `json:"broken_links"`
+	BrokenImages       int               `json:"broken_images"`
+	BrokenImagedetails []BrokenImageInfo `json:"broken_images_details"`
+	BrokenLinkdetails  []BrokenLinkInfo  `json:"broken_link_details"`
+	EmailsFound        []string          `json:"emails_found"`
+	PhonesFound        string            `json:"phones_found"`
 }
 
 var client2 = &http.Client{
@@ -34,6 +48,8 @@ var client2 = &http.Client{
 var brokenCache = map[string]bool{}
 
 func GetContentInformation(siteurl string) (*ContentInfo, error) {
+	os.RemoveAll("screenshots")
+	os.MkdirAll("screenshots", 0755)
 	seenInternal := map[string]bool{}
 	seenExternal := map[string]bool{}
 	result := &ContentInfo{}
@@ -156,6 +172,7 @@ func GetContentInformation(siteurl string) (*ContentInfo, error) {
 
 					if !brokenLinkSeen[fullURL] {
 						result.BrokenLinks++
+						result.BrokenLinkdetails = append(result.BrokenLinkdetails, BrokenLinkInfo{PageURL: current, URL: fullURL})
 						brokenLinkSeen[fullURL] = true
 					}
 				}
@@ -176,23 +193,48 @@ func GetContentInformation(siteurl string) (*ContentInfo, error) {
 				return
 			}
 
+			// Skip embedded/base64/data images
+			if strings.HasPrefix(src, "data:") {
+				return
+			}
+
 			imgURL, err := base.Parse(src)
 			if err != nil {
 				return
 			}
-
 			if isBrokenImage(imgURL.String()) {
 
 				if !brokenImageSeen[imgURL.String()] {
+
 					result.BrokenImages++
-					fmt.Println("CHECKING IMAGE:", imgURL.String())
+
+					fileName := fmt.Sprintf(
+						"screenshots/%d.png",
+						time.Now().UnixNano(),
+					)
+
+					err = GeTTakeScreenshot(current, fileName)
+
+					if err != nil {
+						fmt.Println("SCREENSHOT ERROR:", err)
+					} else {
+						fmt.Println("SCREENSHOT SAVED:", fileName)
+					}
+					result.BrokenImagedetails = append(
+						result.BrokenImagedetails,
+						BrokenImageInfo{
+							PageURL:        current,
+							ImageURL:       imgURL.String(),
+							ScreenshotPath: fileName,
+						},
+					)
+
 					brokenImageSeen[imgURL.String()] = true
 				}
 			}
 
 			imgChecked++
 		})
-
 		result.EmailsFound = append(
 			result.EmailsFound,
 			emailRegex.FindAllString(text, -1)...,
@@ -205,59 +247,6 @@ func GetContentInformation(siteurl string) (*ContentInfo, error) {
 
 	return result, nil
 }
-
-// func isBrokenImage(link string) bool {
-
-// 	if v, ok := brokenCache[link]; ok {
-// 		return v
-// 	}
-
-// 	req, err := http.NewRequest("HEAD", link, nil)
-// 	if err != nil {
-// 		brokenCache[link] = true
-// 		return true
-// 	}
-
-// 	resp, err := client2.Do(req)
-// 	if err != nil {
-// 		brokenCache[link] = true
-// 		return true
-// 	}
-// 	defer resp.Body.Close()
-
-// 	broken := resp.StatusCode >= 400
-// 	brokenCache[link] = broken
-// 	return broken
-// }
-
-// func isBrokenLink(link string) bool {
-
-// 	if v, ok := brokenCache[link]; ok {
-// 		return v
-// 	}
-
-// 	req, err := http.NewRequest("HEAD", link, nil)
-// 	if err != nil {
-// 		brokenCache[link] = true
-// 		return true
-// 	}
-
-// 	resp, err := client2.Do(req)
-// 	if err != nil {
-// 		brokenCache[link] = true
-// 		return true
-// 	}
-// 	defer resp.Body.Close()
-
-// 	broken := resp.StatusCode >= 400
-
-// 	if broken {
-// 		fmt.Println("BROKEN LINK:", link, "Status:", resp.StatusCode)
-// 	}
-
-// 	brokenCache[link] = broken
-// 	return broken
-// }
 
 func isBrokenImage(link string) bool {
 
@@ -305,10 +294,56 @@ func isBrokenImage(link string) bool {
 	return false
 }
 
+// func isBrokenLink(link string) bool {
+
+// 	if v, ok := brokenCache[link]; ok {
+// 		return v
+// 	}
+
+// 	req, err := http.NewRequest("GET", link, nil)
+// 	if err != nil {
+// 		return true
+// 	}
+
+// 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36")
+// 	req.Header.Set("Accept", "text/html,application/xhtml+xml")
+// 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+// 	req.Header.Set("Range", "bytes=0-1024")
+
+// 	resp, err := client2.Do(req)
+// 	if err != nil {
+// 		return true
+// 	}
+// 	defer resp.Body.Close()
+
+// 	status := resp.StatusCode
+
+// 	if status == 404 || status == 410 {
+// 		brokenCache[link] = true
+// 		fmt.Println("broken", link)
+// 		return true
+// 	}
+
+// 	brokenCache[link] = false
+// 	return false
+// }
+
 func isBrokenLink(link string) bool {
 
 	if v, ok := brokenCache[link]; ok {
 		return v
+	}
+
+	link = strings.TrimSpace(link)
+	link = strings.TrimSuffix(link, "%20")
+
+	u, err := url.Parse(link)
+	if err != nil {
+		return true
+	}
+
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
 	}
 
 	req, err := http.NewRequest("GET", link, nil)
@@ -316,28 +351,33 @@ func isBrokenLink(link string) bool {
 		return true
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36")
+	req.Header.Set("User-Agent", "Mozilla/5.0")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
-	req.Header.Set("Range", "bytes=0-1024")
 
-	resp, err := client2.Do(req)
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return nil // allow redirects
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return true
 	}
 	defer resp.Body.Close()
 
-	status := resp.StatusCode
+	code := resp.StatusCode
 
-	if status == 404 || status == 410 {
+	if code == 404 || code == 410 {
 		brokenCache[link] = true
-		fmt.Println("broken", link)
 		return true
 	}
-
-	if status == 403 || status == 406 || status == 429 {
-		brokenCache[link] = false
-		return false
+	if code == 403 || code == 429 {
+		return false // NOT broken
+	}
+	if code >= 500 {
+		return true
 	}
 
 	brokenCache[link] = false

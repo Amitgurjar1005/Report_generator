@@ -72,8 +72,14 @@ func GetNetworkInformation(siteURL string) (*NetworkInfo, error) {
 				return
 			}
 			u, err := url.Parse(href)
+			if err != nil {
+				return
+			}
 			fullurl := base.ResolveReference(u).String()
 			parsed, err := url.Parse(fullurl)
+			if err != nil {
+				return
+			}
 			if parsed.Host != base.Host {
 				return
 			}
