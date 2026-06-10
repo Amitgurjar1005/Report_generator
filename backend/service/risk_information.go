@@ -31,7 +31,7 @@ func GetRiskInformation(siteurl string) (*RiskAnalysis, error) {
 	result := &RiskAnalysis{}
 	queue := []string{siteurl}
 	visited := map[string]bool{}
-	max := 20
+	max := 100
 	for len(queue) > 0 && len(visited) < max {
 		current := queue[0]
 		queue = queue[1:]

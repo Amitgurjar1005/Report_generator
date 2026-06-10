@@ -2,40 +2,91 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
-func GeTTakeScreenshot(pageURL, fileName string) error {
+func GeTTakeScreenshot(
+	pageURL string,
+	imageURL string,
+	fileName string,
+) error {
 
-	// 👇 IMPORTANT: create folder first
-	os.MkdirAll("screenshots", 0755)
-
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.ExecPath("/snap/bin/chromium"),
-		chromedp.Flag("headless", true),
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("disable-gpu", true),
-		chromedp.Flag("disable-dev-shm-usage", true),
-	)
-
-	allocCtx, cancelAlloc := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancelAlloc()
-
-	ctx, cancel := chromedp.NewContext(allocCtx)
+	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-
-	ctx, cancelTimeout := context.WithTimeout(ctx, 30*time.Second)
-	defer cancelTimeout()
 
 	var buf []byte
 
-	err := chromedp.Run(ctx,
+	js := fmt.Sprintf(`
+		(function () {
+			const target = %q;
+
+			function normalize(url) {
+				try {
+					return new URL(url).pathname;
+				} catch (e) {
+					return url;
+				}
+			}
+
+			const targetPath = normalize(target);
+
+			const imgs = document.querySelectorAll('img');
+
+			for (const img of imgs) {
+
+				const src = img.currentSrc || img.src;
+
+				if (normalize(src) === targetPath) {
+
+					const isBroken =
+						img.complete &&
+						img.naturalWidth === 0;
+
+					if (isBroken) {
+						img.style.border = '5px solid red';
+						img.style.boxSizing = 'border-box';
+						img.title = 'BROKEN IMAGE';
+					} else {
+						img.style.border = '5px solid green';
+						img.style.boxSizing = 'border-box';
+						img.title = 'VALID IMAGE';
+					}
+
+					img.scrollIntoView({
+						block: 'center',
+						inline: 'center'
+					});
+
+					break;
+				}
+			}
+		})();
+	`, imageURL)
+
+	err := chromedp.Run(
+		ctx,
+
+		// Desktop viewport
+		chromedp.EmulateViewport(1920, 1080),
+
 		chromedp.Navigate(pageURL),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.FullScreenshot(&buf, 90),
+		chromedp.WaitVisible("body", chromedp.ByQuery),
+
+		// Allow images/lazy loading
+		chromedp.Sleep(3*time.Second),
+
+		// Highlight image
+		chromedp.Evaluate(js, nil),
+
+		// Wait after scrolling
+		chromedp.Sleep(1*time.Second),
+
+		// Capture only visible desktop screen
+		chromedp.CaptureScreenshot(&buf),
 	)
 
 	if err != nil {

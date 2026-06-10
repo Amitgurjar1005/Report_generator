@@ -41,7 +41,7 @@ func GetPagePerformance(siteURL string) (*PagePerformance, error) {
 	queue := []string{siteURL}
 	visited := make(map[string]bool)
 
-	maxPages := 20
+	maxPages := 100
 
 	for len(queue) > 0 && len(visited) < maxPages {
 

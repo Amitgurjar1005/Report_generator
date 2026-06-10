@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/backend/controller"
+	"backend/backend/service"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,7 @@ func main() {
 	router.Static("/screenshots", "./screenshots")
 
 	router.POST("/report", controller.GetWebsiteReport)
+	router.POST("/send-report", service.SendReport)
 
 	router.Run(":8086")
 }

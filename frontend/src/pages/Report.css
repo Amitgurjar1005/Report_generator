@@ -173,3 +173,50 @@ td {
     box-shadow: none;
   }
 }
+
+.broken-image-preview {
+  width: 180px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.broken-image-preview:hover {
+  transform: scale(1.05);
+}
+
+/* FULLSCREEN MODAL */
+.image-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+.modal-image {
+  width: min(90vw, 600px);
+  height: min(90vw, 600px);
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+/* IMAGE FITS SCREEN PROPERLY */
+.modal-image {
+  max-width: 95vw;
+  max-height: 95vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+.modal-image:hover {
+  transform: scale(1.03);
+}

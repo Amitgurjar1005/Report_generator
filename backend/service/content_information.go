@@ -20,9 +20,8 @@ type BrokenImageInfo struct {
 	ScreenshotPath string `json:"screenshot_path"`
 }
 type BrokenLinkInfo struct {
-	PageURL string `json:"page_url"` // where it was found
-	URL     string `json:"url"`      // broken link itself
-
+	PageURL string `json:"page_url"`
+	URL     string `json:"url"`
 }
 
 type ContentInfo struct {
@@ -213,7 +212,7 @@ func GetContentInformation(siteurl string) (*ContentInfo, error) {
 						time.Now().UnixNano(),
 					)
 
-					err = GeTTakeScreenshot(current, fileName)
+					err = GeTTakeScreenshot(current, imgURL.String(), fileName)
 
 					if err != nil {
 						fmt.Println("SCREENSHOT ERROR:", err)
@@ -248,51 +247,51 @@ func GetContentInformation(siteurl string) (*ContentInfo, error) {
 	return result, nil
 }
 
-func isBrokenImage(link string) bool {
+// func isBrokenImage(link string) bool {
 
-	if v, ok := brokenCache[link]; ok {
-		return v
-	}
+// 	if v, ok := brokenCache[link]; ok {
+// 		return v
+// 	}
 
-	req, err := http.NewRequest("GET", link, nil)
-	if err != nil {
-		brokenCache[link] = true
-		return true
-	}
+// 	req, err := http.NewRequest("GET", link, nil)
+// 	if err != nil {
+// 		brokenCache[link] = true
+// 		return true
+// 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-	req.Header.Set("Accept", "image/*,*/*;q=0.8")
-	req.Header.Set("Range", "bytes=0-2048")
+// 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+// 	req.Header.Set("Accept", "image/*,*/*;q=0.8")
+// 	req.Header.Set("Range", "bytes=0-2048")
 
-	resp, err := client2.Do(req)
-	if err != nil {
-		brokenCache[link] = true
-		return true
-	}
-	defer resp.Body.Close()
+// 	resp, err := client2.Do(req)
+// 	if err != nil {
+// 		brokenCache[link] = true
+// 		return true
+// 	}
+// 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		brokenCache[link] = true
-		return true
-	}
+// 	if resp.StatusCode >= 400 {
+// 		brokenCache[link] = true
+// 		return true
+// 	}
 
-	contentType := resp.Header.Get("Content-Type")
-	if !strings.Contains(contentType, "image") {
-		brokenCache[link] = true
-		return true
-	}
+// 	contentType := resp.Header.Get("Content-Type")
+// 	if !strings.Contains(contentType, "image") {
+// 		brokenCache[link] = true
+// 		return true
+// 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 512))
-	if err == nil {
-		if strings.Contains(strings.ToLower(string(body)), "<html") {
-			brokenCache[link] = true
-			return true
-		}
-	}
+// 	body, err := io.ReadAll(io.LimitReader(resp.Body, 512))
+// 	if err == nil {
+// 		if strings.Contains(strings.ToLower(string(body)), "<html") {
+// 			brokenCache[link] = true
+// 			return true
+// 		}
+// 	}
 
-	brokenCache[link] = false
-	return false
-}
+// 	brokenCache[link] = false
+// 	return false
+// }
 
 // func isBrokenLink(link string) bool {
 
@@ -377,6 +376,129 @@ func isBrokenLink(link string) bool {
 		return false // NOT broken
 	}
 	if code >= 500 {
+		return true
+	}
+
+	brokenCache[link] = false
+	return false
+}
+
+func normalizeImageURL(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+
+	q := u.Query()
+
+	// remove image transformation params
+	q.Del("height")
+	q.Del("width")
+	q.Del("quality")
+	q.Del("crop")
+
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+// func isBrokenImage(link string) bool {
+
+// 	link = normalizeImageURL(link)
+
+// 	if v, ok := brokenCache[link]; ok {
+// 		return v
+// 	}
+
+// 	req, _ := http.NewRequest("HEAD", link, nil)
+
+// 	req.Header.Set("User-Agent",
+// 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36")
+
+// 	resp, err := client2.Do(req)
+// 	if err != nil || resp.StatusCode >= 400 {
+// 		// fallback to GET (important fix)
+// 		req, _ := http.NewRequest("GET", link, nil)
+// 		req.Header.Set("User-Agent",
+// 			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36")
+
+// 		resp2, err2 := client2.Do(req)
+// 		if err2 != nil {
+// 			brokenCache[link] = true
+// 			return true
+// 		}
+// 		defer resp2.Body.Close()
+
+// 		ct := resp2.Header.Get("Content-Type")
+// 		if resp2.StatusCode >= 400 || !strings.HasPrefix(ct, "image/") {
+// 			brokenCache[link] = true
+// 			return true
+// 		}
+
+// 		brokenCache[link] = false
+// 		return false
+// 	}
+
+// 	defer resp.Body.Close()
+
+// 	ct := resp.Header.Get("Content-Type")
+// 	if resp.StatusCode >= 400 || !strings.HasPrefix(ct, "image/") {
+// 		brokenCache[link] = true
+// 		return true
+// 	}
+
+// 	brokenCache[link] = false
+// 	return false
+// }
+
+func isBrokenImage(link string) bool {
+	link = normalizeImageURL(link)
+
+	if v, ok := brokenCache[link]; ok {
+		return v
+	}
+
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		brokenCache[link] = true
+		return true
+	}
+
+	req.Header.Set("User-Agent",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36")
+
+	req.Header.Set("Accept",
+		"image/avif,image/webp,image/apng,image/*,*/*;q=0.8")
+
+	req.Header.Set("Range", "bytes=0-1024") // lightweight fetch
+	req.Header.Set("Referer", link)
+
+	resp, err := client2.Do(req)
+	if err != nil {
+		brokenCache[link] = true
+		return true
+	}
+	defer resp.Body.Close()
+
+	// 1. status check
+	if resp.StatusCode >= 400 {
+		brokenCache[link] = true
+		return true
+	}
+
+	// 2. content-type check
+	ct := resp.Header.Get("Content-Type")
+	if ct != "" && !strings.HasPrefix(ct, "image/") {
+		brokenCache[link] = true
+		return true
+	}
+
+	// 3. basic body validation (detect HTML error pages)
+	buf := make([]byte, 512)
+	n, _ := resp.Body.Read(buf)
+
+	body := strings.ToLower(string(buf[:n]))
+	if strings.Contains(body, "<html") || strings.Contains(body, "<!doctype") {
+		brokenCache[link] = true
 		return true
 	}
 
