@@ -2,11 +2,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-
+import User from "./User"
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+const [showModal, setShowModal] = useState(false);
+const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const generateReport = async () => {
     if (!url) return;
@@ -105,7 +109,43 @@ export default function Home() {
             </p>
           </div>
         )}
+   <div className="featureCard">
+  <div className="featureEmoji">👤</div>
+  <h3>User Registration</h3>
+ {user?.email ? (
+    <>
+      <p className="successText">
+        ✅ Successfully Registered
+      </p>
 
+      <p>
+        Reports will be automatically sent to:
+        <br />
+        <strong>{user.email}</strong>
+      </p>
+        <button
+        className="registerBtn"
+        onClick={() => setShowModal(true)}
+      >
+        Change Email
+      </button>
+    </>
+  ) : (
+    <>
+      <p>
+        Register yourself so reports can be sent automatically to your email.
+      </p>
+
+      <button
+        className="registerBtn"
+        onClick={() => setShowModal(true)}
+      >
+        Register
+      </button>
+    </>
+  )}
+  
+</div>
         <div className="featureCards">
 
           <div className="featureCard">
@@ -156,8 +196,23 @@ export default function Home() {
             </p>
           </div>
 
+       
+
         </div>
       </div>
+      {showModal && (
+  <div
+    className="modalOverlay"
+    onClick={() => setShowModal(false)}
+  >
+    <div
+      className="modalContent"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <User setShowModal={setShowModal} />
+    </div>
+  </div>
+)}
     </div>
   );
 }

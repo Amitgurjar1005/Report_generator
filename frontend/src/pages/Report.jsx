@@ -3,10 +3,11 @@ import "./Report.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useState, useEffect } from "react";
+import {useRef } from "react";
 export default function Report() {
   const { state: report } = useLocation();
   const navigate = useNavigate();
-
+const sentRef = useRef(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   if (!report) {
@@ -113,15 +114,29 @@ export default function Report() {
   // };
 
   
+// useEffect(() => {
+//   const autoSend = async () => {
+//     const blob = await generatepdfblob();
+//     await sendEmailWithPDF(blob);
+//   };
+
+//   autoSend();
+// }, []);
 useEffect(() => {
+  if (sentRef.current) return;
+  sentRef.current = true;
+const user = JSON.parse(
+  localStorage.getItem("user")
+);
+
   const autoSend = async () => {
     const blob = await generatepdfblob();
     await sendEmailWithPDF(blob);
   };
-
+  if(user?.email){
   autoSend();
+  }
 }, []);
-
   const downloadPDF = async () => {
   const blob = await generatepdfblob();
 
@@ -314,8 +329,12 @@ const generatepdfblob= async () => {
       pdfBlob,
       "website-report.pdf"
     );
+        
+const user = JSON.parse(
+  localStorage.getItem("user")
+);
 
-    formData.append("email", "amitpunase4@gmail.com");
+    formData.append("email",user.email);
 
     await fetch("http://localhost:8086/send-report", {
       method: "POST",

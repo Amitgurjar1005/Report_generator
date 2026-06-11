@@ -1,6 +1,4 @@
-/* =========================
-   MAIN PAGE
-========================= */
+
 .reportPage {
   background: #d1d5db;
   min-height: 100vh;
@@ -10,9 +8,7 @@
   align-items: center;
 }
 
-/* =========================
-   TOP BAR
-========================= */
+
 .topBar {
   width: 210mm;
   display: flex;
@@ -41,9 +37,7 @@
   color: #fff;
 }
 
-/* =========================
-   A4 PAGE
-========================= */
+
 .a4 {
   width: 210mm;
   min-height: 297mm;
@@ -55,9 +49,7 @@
   overflow: hidden;
 }
 
-/* =========================
-   TITLE
-========================= */
+
 .title {
   text-align: center;
   font-size: 20px;
@@ -67,9 +59,7 @@
   letter-spacing: 1px;
 }
 
-/* =========================
-   SECTION
-========================= */
+
 .section {
   margin-bottom: 14px;
 }
@@ -82,9 +72,7 @@
   border-radius: 3px;
 }
 
-/* =========================
-   TABLE
-========================= */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -110,9 +98,6 @@ td {
   line-height: 1.4;
 }
 
-/* =========================
-   BROKEN IMAGE CARD
-========================= */
 .broken-image-card {
   border: 1px solid #e5e7eb;
   padding: 10px;
@@ -126,9 +111,8 @@ td {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* =========================
-   SMALL CLEAN IMAGE (IMPORTANT)
-========================= */
+
+
 .broken-image-preview {
   width: 180px;
   height: 120px;
@@ -138,16 +122,14 @@ td {
   margin-top: 8px;
 }
 
-/* links */
+
 .broken-image-card a {
   font-size: 11px;
   word-break: break-all;
   color: #2563eb;
 }
 
-/* =========================
-   JSON BLOCK
-========================= */
+
 .json {
   font-size: 11px;
   background: #f9fafb;
@@ -156,9 +138,7 @@ td {
   overflow-x: auto;
 }
 
-/* =========================
-   PRINT MODE
-========================= */
+
 @media print {
   .no-print {
     display: none;
@@ -185,7 +165,7 @@ td {
   transform: scale(1.05);
 }
 
-/* FULLSCREEN MODAL */
+
 .image-modal {
   position: fixed;
   inset: 0;
@@ -205,7 +185,7 @@ td {
   transition: transform 0.2s ease;
 }
 
-/* IMAGE FITS SCREEN PROPERLY */
+
 .modal-image {
   max-width: 95vw;
   max-height: 95vh;
